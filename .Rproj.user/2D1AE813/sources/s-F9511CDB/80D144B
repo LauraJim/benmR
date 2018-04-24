@@ -1,0 +1,23 @@
+{
+    "collab_server" : "",
+    "contents" : "",
+    "created" : 1524521779565.000,
+    "dirty" : false,
+    "encoding" : "UTF-8",
+    "folds" : "",
+    "hash" : "0",
+    "id" : "80D144B",
+    "lastKnownWriteTime" : 1524525689,
+    "last_content_update" : 1524525689143,
+    "path" : "~/benmR/R/model-functions.R",
+    "project_path" : "R/model-functions.R",
+    "properties" : {
+        "cursorPosition" : "7,17",
+        "scrollLine" : "0",
+        "tempName" : "Untitled1"
+    },
+    "relative_order" : 6,
+    "source_on_save" : false,
+    "source_window" : "",
+    "type" : "r_source"
+}

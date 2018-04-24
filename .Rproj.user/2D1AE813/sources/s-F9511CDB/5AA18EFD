@@ -1,0 +1,23 @@
+{
+    "collab_server" : "",
+    "contents" : "",
+    "created" : 1524353577584.000,
+    "dirty" : false,
+    "encoding" : "UTF-8",
+    "folds" : "",
+    "hash" : "3517718722",
+    "id" : "5AA18EFD",
+    "lastKnownWriteTime" : 1524545064,
+    "last_content_update" : 1524545064531,
+    "path" : "~/benmR/R/plot-tools.R",
+    "project_path" : "R/plot-tools.R",
+    "properties" : {
+        "cursorPosition" : "25,18",
+        "scrollLine" : "16",
+        "tempName" : "Untitled1"
+    },
+    "relative_order" : 2,
+    "source_on_save" : false,
+    "source_window" : "",
+    "type" : "r_source"
+}

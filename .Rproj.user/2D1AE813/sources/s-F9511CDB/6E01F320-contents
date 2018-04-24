@@ -1,0 +1,297 @@
+# Laura Jimenez
+# Statistical Model for Fundamental Niche Estimation
+
+# Simple case: d=2, it means that we only consider two environmental variables in the analysis
+
+# Functions -----------------------------------------------------------------------------
+
+## Define the species and environmental variables to work with,
+# columns Comp1[1] and Comp2[1] in the environmental csv file containing the climate data
+# columns Comp1[2] and Comp2[2] in the species csv file containing the climate data
+DefineSp <- function(env, data.sp, Comp1, Comp2, duplicate=F)
+{
+  Comp1 <<- Comp1
+  Comp2 <<- Comp2
+	# Define the global environmental variables
+  env.d <<- as.matrix(env[ , c(Comp1[1],Comp2[1])])  
+	# Define the species environmental data (occurrences)
+  env.sp <<- as.matrix(data.sp[ , c(Comp1[2],Comp2[2])])   
+  if(duplicate == T) env.sp  <<- subset(env.sp,duplicated(env.sp[,Comp1])==F)  # remove duplicated data 
+	n <<- dim(env.sp)[1]
+  m <<- dim(env.d)[1]
+  N <<- n+m
+	Et <<- rbind(env.d,env.sp)
+}
+
+## In the main model mu is the mean vector and A is the precision matrix
+# We define the support (ie. = TRUE if vaild values for mu and Sigma)
+# This function is essential for using the t-walk algorithm
+# Variable mu.lim must be defined before using this function
+Supp <- function(th)
+{ # If we have two environmental variables, th has 2 (mu) + 2 (A diag) + 1 (A off diag) = 5 parameters
+	mu <<- th[1:2]
+	rt <- (mu.lim[1] < mu[1]) & (mu[1] < mu.lim[2])
+	rt <- rt & ((mu.lim[3] < mu[2]) & (mu[2] < mu.lim[4]))
+	mu <<- matrix( mu, nrow=2, ncol=1)
+	if (rt) {     # Test if A positive definite
+		A <<- matrix( c( th[3], th[5], th[5], th[4]), nrow=2, ncol=2)
+		ev <- eigen(A)$values
+		detA <<- prod(ev)
+		suma.Et <<- sum( apply( Et, 1, function(yi) { ax<-as.matrix(yi - mu); exp(-0.5 * (t(ax) %*% A %*% ax)) }))
+		# TRUE if all eigenvalues are greater than zero (A is positive definite) and suma.Et is positive 
+		all(ev > 0) & (suma.Et > 0)
+	}
+	else
+		FALSE  # Return value: T or F
+}  # Now we have fixed: mu, A and detA 
+
+## Produce initial values, simulate them from prior ... here is not done right!!!
+# This function is essential for using the t-walk algorithm
+Initth <- function()
+{	
+	mu <- mu0 + CholSigma0 %*% rnorm(2)
+	
+	X1 <- CholW %*% rnorm(2)
+	X2 <- CholW %*% rnorm(2)
+	
+	A <- X1 %*% t(X1) + X2 %*% t(X2)  ### This works for alpha = 2 
+
+	c( mu[1], mu[2], A[1,1], A[2,2], A[1,2])
+	
+	#dg <- rgamma(1, 0.1, rate=1)
+	#A <- solve(matrix( c(	rgamma(1, alpha, rate=W[1,1]), dg, dg, rgamma(1, alpha, rate=W[2,2])), nrow=2, ncol=2))
+	#c( rnorm(1, mean=mu0[1], sd=Sigma0[1,1]), rnorm(1, mean=mu0[2], sd=Sigma0[2,2]), A[1,1], A[2,2], A[1,2])
+}
+
+## Plot environmental variables Comp1 and Comp2 of species data env.sp
+# If th not NULL, then also plot a Bivariate Normal with parameters th (See function Supp above)
+# It's posible to add other valid parameters for the function contour or change the color (See function PlotBN above)
+PlotXYEnvVars <- function( th=NULL, col="red", lev=0.95, ...) 
+{
+	plot( env.d, pch=".", col="black", ...)
+	points( env.sp, pch=19, col=col)
+	if (!(is.null(th)))
+		if (Supp(th)) 
+		{
+		  el<-ellipse::ellipse(x=chol2inv(chol(A)),centre = mu,level=lev) 
+		  lines(el,col="blue",lwd=2)
+		}
+}
+
+## After running the MCMC this will plot a selection (indices) of the MCMC iterations 
+# from gives the start iteration and thin the separation between iterations
+PlotIterations <- function( info, from=2000, thin=200, lev=0.95,...) 
+{	
+	post <- exp(-info$Us - max(-info$Us) + 500)/exp(500) ## This is a normalized posterior from 0 to 1
+	post1 <- sort(post)
+  
+	ix <- which( post1 == max(post))[1] ## looking for the MAP
+	th <- info$output[ix,]
+	PlotXYEnvVars(th,xlab="Comp1",ylab="Comp2",lev=lev,...)
+
+	indices <- seq(from, info$Tr, thin)
+	#colo <- colorRamp(col.ran)
+
+	for (i in indices) 
+  {
+	  if(Supp(info$output[i,])) ##
+		{
+		  el<-ellipse::ellipse(x=chol2inv(chol(A)),centre = mu,level=lev) 
+		  lines(el,col=grey(1-post[i]),lwd=2) 
+		}
+	}
+
+	if(Supp(th)) ## after this step we kept the MAP in the variables mu and A
+	{
+	  el<-ellipse::ellipse(x=chol2inv(chol(A)),centre = mu,level=lev) 
+	  lines(el,col="blue",lwd=3)
+	}
+}
+
+## Function used to save all the values of mu and Sigma simulated from the posterior ----------
+save.all <- function(info,from,thin,filename){
+  # select only the iterations chosen to plot the ellipses
+  indices <- seq(from, info$Tr, thin)
+  th <- info$output[indices,]
+  save <- matrix(0,nrow=nrow(th),ncol=6)
+  for(j in 1:nrow(th))
+    # save values in the right order
+    save[j,] <- c(th[j,1:3],th[j,5],th[j,5],th[j,4])
+  write.csv(save,file=filename,row.names = F)
+}
+# ------------- M A I N --------------------------------------------------------
+
+# Read the environmental variables and occurrence data ------
+
+setwd("C:\\Users\\Laura\\Dropbox\\KU\\Doc-project\\NicheEstimation\\2017-Sp-sim")
+
+## Geo-referenced data (longitud,latitude) + Environmental observations (Comp1,Comp2)
+env <- read.csv("VarsCrdsBackground.csv",header=T)
+#names(envC)<-NULL
+
+# changing the E-space
+#ind <- which(envC$x > -85 & envC$x < -60 & envC$y > -20 & envC$y < 0)
+#env <- envC[ind,]
+
+## Occurrence data from artificial species:
+el.col <- c("green","orangered2","turquoise2","violetred2")
+spn <- 4
+rotule <- "Sp4d-50"
+
+# A priori limits x-axis=(a1,b1) and y-axis=(a2,b2)
+tolran <- read.csv(".\\New-Spp\\tolerance_ranges_new.csv",header=T)
+a1 <- tolran$xleft[spn] #xleft
+b1 <- tolran$xright[spn] #xright
+a2 <- tolran$ybottom[spn] #ybottom
+b2 <- tolran$ytop[spn] #ytop
+
+data <- read.csv(".\\New-Spp\\Sp4d_50_1.csv",header=T)
+# Fixing the species and environmental variables to work with ----
+DefineSp( env = env, data.sp = data, Comp1=c(6,4), Comp2=c(7,5))
+  # Now we have fixed: Comp1, Comp2, env.d, env.sp, n, m, N, Et
+
+## Define a valid interval for mu, depending on the rage of the environmental variables
+mu.lim <<- c(min(Et[,1])-0.5,max(Et[,1])+0.5,min(Et[,2])-0.5,max(Et[,2])+0.5)
+## Number of environmental variables in the study 
+dd <- 2
+
+# Plots -----
+### Plot the geographical and environmental spaces with the occurrence of the species on top
+x11()
+par(mfrow=c(1,2))
+## Geographical Space:
+# Plot the geographical locations of reported presences of the species, on top of the global environmental variables
+plot(env[,2],env[,3],pch=".",col=1,xlab="Longitude",ylab="Latitude",main="Geographical space")
+  points(data[,2],data[,3],pch=19,col=el.col[spn])
+
+## Environmental Space:
+# Plot environmental variables of species data and the location of reported presences of the species on top
+plot(env.d, pch=".", col=1,xlab="Bio1WHStnd",ylab="Bio12WHStnd",main="Environmental space")
+  points(env.sp, pch=19, col=el.col[spn])
+  rect(xleft=a1,xright=b1,ybottom=a2,ytop=b2,border="gold",lwd=2)
+  legend("topleft",legend=c("Species presences:",rotule,"Tolerance ranges"),pch=c(19,NA,NA),
+          bty="n",lty=c(0,0,1),col=c(el.col[spn],"white","gold"),lwd=2)
+
+### Statistical Model
+
+# Define the prior parameters ----------
+
+# Get estimations for the sample mean and variance of every environmental variable
+s1.prior <- ((b1-a1)/10)^2
+s2.prior <- ((b2-a2)/10)^2
+mu1.prior <- a1 + (b1-a1)/2
+mu2.prior <- a2 + (b2-a2)/2
+
+# For the centroid, this is a bivariate normal distribution with:
+mu0 <- c(mu1.prior,mu2.prior)     #mean vector mu0
+Sigma0 <- matrix(c(s1.prior,0,0,s2.prior),nrow=2,ncol=2) #variance covariance matrix Sigma0
+CholSigma0 <- chol(Sigma0)
+A0 <- chol2inv(CholSigma0)    # precision matrix
+A0mu0 <- A0 %*% mu0
+mu0
+A0
+# Plot the contour line in the environmental space:
+el<-ellipse::ellipse(x=Sigma0,centre = mu0,level=0.95)
+lines(el,col="gold",lwd=2)
+
+# For the precision matrix, it is a Wishart distribution with
+alpha <- 2 #shape parameter, default, do not move for now
+W <- alpha*A0  #scale matrix W.
+CholW <- chol(W)
+Winv <- chol2inv(CholW)
+W
+# The prior expected value for the precision matrix is E(A) = W
+
+# library(ks)
+# # Compute the kde at the occurrence data of species
+# fhat.Et <- kde(x=Et,eval.points=env.sp)
+# w <- as.vector(fhat.Et$estimate)
+# hist(w,breaks=10,col="thistle3",main="Kernel values",xlab="Et kernel")
+# # Compute the vector of weigths
+#  ws <- sapply(w,function(x){1/x})
+#  wi <<- n * ws / sum(ws)
+# x11()
+# par(mfrow=c(1,2))
+# plot(wi,col=3,pch=19,main="Panicum antidotale, a=0.75",xlim=c(0,40),ylim=c(0,2.5),xaxs="i",yaxs="i")
+# hist(wi,col="thistle3",main="Weights for the likelihood factors",xlab="w_i")
+
+# Energy = - log ( posterior ) ----------
+wi <<- rep(1,n)
+# This is called right after Supp: mu, A and detA are already defined, th is ignored
+Energy <- function(th) 
+{ # This is called right after Supp: mu, A and detA are already defined, th is ignored
+  ax1 <- (mu - mu0)
+  ax2 <- apply( env.sp, 1, function(xi) { ax<-as.matrix(xi - mu); t(ax) %*% A %*% ax })
+  # first two terms are generic in the posterior due to the normal model
+  S <- 0.5*sum(wi*ax2) + n*log(suma.Et)
+  # these terms correspond to the priors:
+  S <- S + 0.5*( t(ax1) %*% A0 %*% ax1 + sum(diag(A %*% Winv)) - (alpha-dd-1)*log(detA) )
+  
+  S # + 10**6 numerical artifact
+}
+
+# Run the MCMC to produce simulations from the posterior ---------
+library(Rtwalk)
+Run <- function(Tr=20000) 
+{
+	info <- Runtwalk( Tr=Tr, dim=5, Obj=Energy, Supp=Supp, x0=Initth(), xp0=Initth())
+	x11()
+  PlotIterations( info )
+	
+	info
+}
+
+ptm <- proc.time()
+info <- Run(Tr=7000)
+proc.time() - ptm
+
+# Plotting results:
+mu
+chol2inv(chol(A))
+x11()
+PlotIterations(info,col=el.col[spn],main=paste(rotule,"7K",sep="_"),xlim=c(-0.5,2),ylim=c(0.5,3.5))# 
+# true ellipse
+mus.fn <- matrix(c(-1,-0.35,-0.38,1.85,0.69,-0.25,1,2),ncol=2,byrow=T)
+sigma.fn <- matrix(c(0.41227508170661825,0.36665561328051227,0.36665561328051227,0.75)/10,ncol=2,byrow=T)
+el.sp<-ellipse::ellipse(x=sigma.fn,centre = mus.fn[spn,],level=0.95)
+lines(el.sp,col=el.col[spn],lwd=3)
+# a priori ellipse
+el<-ellipse::ellipse(x=Sigma0,centre = mu0,level=0.95)
+lines(el,col="gold",lwd=2)
+# save al the values of mu and A
+fname <- paste0(paste(rotule,"7K","output",sep="_"),".csv")
+save.all(info,2000,200,paste0(".\\New-Spp\\",fname))
+
+### END -------
+
+# Truncated multivariate normal distribution
+library(tmvtnorm)
+up <- c(max(env.sp[,1]),max(env.sp[,2]))
+low <- c(min(env.sp[,1]),min(env.sp[,2]))
+ind <- which(env[,6] > low[1] & env[,6] < up[1] & env[,7] > low[2] & env[,7] < up[2])
+env.box <- env[ind,]
+x <- rtmvnorm(n=50, mean=mus.fn[spn,], sigma=sigma.fn, upper=up,lower=low)
+x11()
+plot(env.box[,6:7], main="samples from truncated bivariate normal distribution",xlim=c(0,1.5), ylim=c(-1,4), 
+    xlab=expression(x[1]), ylab=expression(x[2]), pch=19)    
+points(x,pch=19,col=el.col[spn])
+lines(el.sp,col=el.col[spn],lwd=2)
+
+Energy <- function(th) 
+{ # This is called right after Supp: mu, A and detA are already defined, th is ignored
+  ax1 <- (mu - mu0)
+  # first two terms are generic in the posterior due to the normal model
+  ax2 <- apply( env.sp, 1, function(xi,mu,A) { dtmvnorm(xi,mean=mu,sigma=chol2inv(chol(A)),
+                                                   lower=low,upper=up,log=T) },mu,A)
+  S <- sum(ax2)
+  # these terms correspond to the priors:
+  S <- S + 0.5*( t(ax1) %*% A0 %*% ax1 + sum(diag(A %*% Winv)) - (alpha-dd-1)*log(detA) )
+  
+  S # + 10**6 numerical artifact
+}
+
+ptm <- proc.time()
+info <- Run(Tr=5000)
+proc.time() - ptm
+
+#

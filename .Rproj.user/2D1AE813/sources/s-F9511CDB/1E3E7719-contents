@@ -1,0 +1,17 @@
+Package: benmR
+Type: Package
+Title: Implementation of a Bayesian Method for Estimating Niches from Presence Data
+Version: 0.1.0
+Author: person("Laura", "Jimenez-Jimenez", email = "laura_jimenez@ku.edu",
+  role = c("aut", "cre"))
+Maintainer: The package maintainer <yourself@somewhere.net>
+Description: Implementation of a Bayesian Method for Estimating Multidimensional
+    Ecological Niches from Presence Data. It contains tools for visualizing the
+    data, functions to simulate from the posterior function and functions to
+    analyze and visualize the simulated values.
+License: University of Kansas
+Encoding: UTF-8
+LazyData: true
+Imports:
+  Rtwalk
+RoxygenNote: 6.0.1

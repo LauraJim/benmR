@@ -1,0 +1,23 @@
+{
+    "collab_server" : "",
+    "contents" : "",
+    "created" : 1524526357848.000,
+    "dirty" : false,
+    "encoding" : "UTF-8",
+    "folds" : "",
+    "hash" : "0",
+    "id" : "564C2771",
+    "lastKnownWriteTime" : 1524545487,
+    "last_content_update" : 1524545487490,
+    "path" : "~/benmR/R/prior-parmtr-defntn.R",
+    "project_path" : "R/prior-parmtr-defntn.R",
+    "properties" : {
+        "cursorPosition" : "27,51",
+        "scrollLine" : "18",
+        "tempName" : "Untitled1"
+    },
+    "relative_order" : 4,
+    "source_on_save" : false,
+    "source_window" : "",
+    "type" : "r_source"
+}
