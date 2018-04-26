@@ -28,7 +28,8 @@
 #'   geographical space and the panel on the right will show the data in
 #'   environmental space.
 #' @examples
-#' plotdata(back1,occsp1,tolran1,"tomato")
+#' tolran1 <- c(0.31,1.25,1.51,3.05)
+#' plotdata(backgrNA,Spocc,tolran1,"tomato")
 #
 # CODE:
 plotdata <- function(back,occ.sp,tolran,sp.col)
