@@ -49,6 +49,7 @@ priorpar <- function(tolran,nsd,alpha=2)
       # For the centroid, this is a bivariate normal distribution with parameters
       mu0 <- c(mu1.prior,mu2.prior)     #mean vector mu0
       Sigma0 <- matrix(c(s1.prior,0,0,s2.prior),nrow=2,ncol=2) #variance covariance matrix Sigma0
+      A0 <- chol2inv(chol(Sigma0))    # precision matrix
       # For the precision matrix, it is a Wishart distribution with parameter
       W0 <- alpha*A0  #scale matrix W
     }
