@@ -1,6 +1,6 @@
 # Function 'plotdata' --------
 #
-#' Visualization of datasets to be used for niche estimatition.
+#' Visualization of datasets to be used for niche estimation.
 #'
 #' \code{plotdata} returns two plots that display the data needed to estimate the
 #' niche of a species in both geographical and environmental space.
@@ -24,16 +24,20 @@
 #' @param tolran numeric matrix with one row and four columns named: xleft,
 #'   ybottom, xright, ytop.
 #' @param sp.col character strign with a color name identifying the species.
+#' @param envnames character vector with the names of the environmental
+#'   variables to work with.
 #' @return A plot with two panels. The panel on the left will show the data in
 #'   geographical space and the panel on the right will show the data in
 #'   environmental space.
 #' @examples
-#' tolran1 <- c(0.31,1.25,1.51,3.05)
-#' plotdata(backgrNA,Spocc,tolran1,"tomato")
+#' tolran1 <- c(0,1.2,-1,0.8)
+#' plotdata(backgrAM,Spocc,tolran1,"tomato",c("Annual Mean Temp","Annual Mean Precip"))
 #
 # CODE:
-plotdata <- function(back,occ.sp,tolran,sp.col)
+plotdata <- function(back,occ.sp,tolran,sp.col,envnames)
 {
+  back <- as.matrix(back)
+  occ.sp <- as.matrix(occ.sp)
   par(mfrow=c(1,2))
 
   ## Geographical Space:
@@ -44,8 +48,8 @@ plotdata <- function(back,occ.sp,tolran,sp.col)
 
   ## Environmental Space:
   # Plot environmental variables of species data and the location of reported
-  # presences of the species on top
-  plot(back[,3],back[,4], pch=".", col=1,xlab="Bio1WHStnd",ylab="Bio12WHStnd",main="Environmental space")
+  # presences of the species on
+  plot(back[,3],back[,4], pch=".", col=1,xlab=envnames[1],ylab=envnames[2],main="Environmental space")
   points(occ.sp[,3],occ.sp[,4], pch=19, col=sp.col)
   rect(xleft=tolran[1],xright=tolran[2],ybottom=tolran[3],ytop=tolran[4],border="gold",lwd=2)
   legend("topleft",legend=c("Species presences","Tolerance ranges"),pch=c(19,NA),
