@@ -30,8 +30,9 @@
 #'   geographical space and the panel on the right will show the data in
 #'   environmental space.
 #' @examples
+#' data("backAM","Spocc")
 #' tolran1 <- c(0,1.2,-1,0.8)
-#' plotdata(backgrAM,Spocc,tolran1,"tomato",c("Annual Mean Temp","Annual Mean Precip"))
+#' plotdata(backAM,Spocc,tolran1,"tomato",c("Annual Mean Temp","Annual Mean Precip"))
 #
 # CODE:
 plotdata <- function(back,occ.sp,tolran,sp.col,envnames)
