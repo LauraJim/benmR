@@ -8,6 +8,7 @@
 #' values from the posterior function and estimate the centroid (mu) and the
 #'  precision matrix (A) that define a fundamental niche. If the underlying
 #' statistical model changes, these functions must be modified.
+# TDL## modified or updated?
 #'
 #' In case of having a bivariate normal distribution in the likelihood function,
 #' \code{length(mu)=2} and \code{ncol(A)=2}, and then \code{length(th) = 2 +
@@ -100,7 +101,7 @@ Runtw <- function(Tr=5000, env.back, env.occ, priors, mu.lim, pflag=F, ...)
 {
   # Define all the variables needed to use the functions Supp, Initth and Energy
   Et <- rbind(env.back,env.occ)
-  # valid interval for mu, depending on the rage of the environmental variables
+  # valid interval for mu, depending on the range of the environmental variables
   mu.lim <<- c(min(Et[,1])-0.5,max(Et[,1])+0.5,min(Et[,2])-0.5,max(Et[,2])+0.5)
   # variables that define the a priori distributions
   mu0 <- priors[[1]]
