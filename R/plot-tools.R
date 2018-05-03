@@ -33,7 +33,8 @@
 #' data("backAM","Spocc")
 #' tolran1 <- c(0,1.2,-1,0.8)
 #' plotdata(backAM,Spocc,tolran1,"tomato",c("Annual Mean Temp","Annual Mean Precip"))
-#
+# TDL## wow, there is alot going on here.  May not want to specific the columns by position.  
+# Column names may work better for this types of funciton
 # CODE:
 plotdata <- function(back,occ.sp,tolran,sp.col,envnames)
 {
