@@ -9,12 +9,16 @@
 #' occurrence data and the tolerance ranges of the species of interest, in both
 #' the geographical and the environmental spaces (displaying only the firs two
 #' or three dimensions of the latter).
+#'
 #' The first two columns of \code{back} must contain the longitude and latitude
 #' coordinates of all the points in the grid that define the region of interest,
 #' the remaining columns must contain the values (at least two) of the
 #' environmental variables at each location. Similarly, the first two columns of
 #' \code{occu.sp} must contain the geographical coordinates for the occurrence
 #' data, and the remaining columns must contain the environmental combinations.
+#' See the datasets \code{backAM} and \code{Spocc}, they are examples of the
+#' matrices \code{back} and \code{occu.sp}.
+#'
 #' \code{tolran} must provide the tolerance limits (lower and upper bounds) for
 #' each environmental variable odd columns contain lower limits even columns
 #' containd the upper limits.
@@ -33,8 +37,6 @@
 #' data("backAM","Spocc")
 #' tolran1 <- c(0,1.2,-1,0.8)
 #' plotdata(backAM,Spocc,tolran1,"tomato",c("Annual Mean Temp","Annual Mean Precip"))
-# TDL## wow, there is alot going on here.  May not want to specific the columns by position.  
-# Column names may work better for this types of funciton
 # CODE:
 plotdata <- function(back,occ.sp,tolran,sp.col,envnames)
 {
@@ -57,3 +59,5 @@ plotdata <- function(back,occ.sp,tolran,sp.col,envnames)
   legend("topleft",legend=c("Species presences","Tolerance ranges"),pch=c(19,NA),
          bty="n",lty=c(0,1),col=c(sp.col,"gold"),lwd=2)
 }
+# TDL## wow, there is alot going on here.  May not want to specific the columns by position.
+# Column names may work better for this types of funciton
