@@ -1,4 +1,4 @@
-# Functions 'Supp', 'Initth' and 'Energy' ----------
+# Functions 'Supp', 'Initth', 'Energy' and 'Runtw' ----------
 ### These three functions define the statistical model used to estimate a niche
 ### If the model need to be changed, these three functions must be modified accordingly
 #
@@ -6,7 +6,7 @@
 #'
 #' These three functions are used when the t-walk algorithm is used to simulate
 #' values from the posterior function and estimate the centroid (mu) and the
-#'  precision matrix (A) that define a fundamental niche. If the underlying
+#' precision matrix (A) that define a fundamental niche. If the underlying
 #' statistical model changes, these functions must be modified.
 # TDL## modified or updated?
 #'
