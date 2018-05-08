@@ -13,7 +13,11 @@ License: University of Kansas
 Encoding: UTF-8
 LazyData: true
 Imports:
-  Rtwalk
+  Rtwalk,
+  ellipse
 RoxygenNote: 6.0.1
 URL: https://github.com/LauraJim/benmR
 BugReports: https://github.com/LauraJim/benmR/issues
+Suggests: knitr,
+    rmarkdown
+VignetteBuilder: knitr
