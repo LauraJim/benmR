@@ -1,5 +1,5 @@
 ---
-title: "Implementation of a Bayesian Method for Estimating Niches from Presence Data"
+title: "Package benmR: the implementation of a Bayesian Method for estimating ecological niches from presence data"
 author: "Laura Jiménez"
 date: "`r Sys.Date()`"
 output:
@@ -7,7 +7,7 @@ output:
     toc: true
     fig_caption: yes
 vignette: >
-  %\VignetteIndexEntry{Implementation of a Bayesian Method for Estimating Niches from Presence Data}
+  %\VignetteIndexEntry{Package benmR: the implementation of a Bayesian Method for estimating ecological niches from presence data}
   %\VignetteEngine{knitr::rmarkdown}
   %\VignetteEncoding{UTF-8}
 ---
@@ -19,25 +19,46 @@ knitr::opts_chunk$set(
 )
 ```
 
-Vignettes are long form documentation commonly included in packages. Because they are part of the distribution of the package, they need to be as compact as possible. The `html_vignette` output type provides a custom style sheet (and tweaks some options) to ensure that the resulting html is as small as possible. The `html_vignette` format:
+## Brief description of the Bayesian method for niche estimation
 
-- Never uses retina figures
-- Has a smaller default figure size
-- Uses a custom CSS stylesheet instead of the default Twitter Bootstrap style
+  The method included in this package estimates a niche by:  
+1. Defining an environmental space in which each axis represents a climatic variable. In this space we can plot the existing environmental conditions from the geographic region of interest and use them mainly for interpretating the results.  
+2. Using georeferenced occurrences of the species and its corresponding environmental conditions as the primary data, and climatic tolerance ranges from physiological experiments as _a priori_ information.  
+3. Postulating a simple shape for the niche of a species (Hutchinson's fundamental niche) and using the confidence curves form a multivariate normal distribution to represent the fundamental niche, so that the parameters of interest are a vector of means, $\mu$, and a precision matrix, $A$ (which is defined as the inverse of the covariance matrix).  
+4. Providing a probabilistic (i.e. Bayesian) statement of the problem and the posterior distribution for the parameters that define the fundamental niche.  
+5. Applying an MCMC algorithm (the one coded in the package *Rtwalk*) to simulate from the posterior and analyzing the variation in the sample.
 
-## Vignette Info
+### *benmR*: package description
 
-Note the various macros within the `vignette` section of the metadata block above. These are required in order to instruct R how to build the vignette. Note that you should change the `title` field and the `\VignetteIndexEntry` to match the title of your vignette.
+The *benmR* package contains all the functions that the users need to apply this model to their data (*priorpar*,*Supp*, *Initth*,*Energy*,*Runtw*), as well as to produce visualizations of their data (*plotdata*) and the results of the niche estimation (*plot_iter*,*uncer_plot*). It also contains to datasets, *backAM* and *Spocc*, that can be used to run the examples provided here and in the documentation of each function.  
 
-## Styles
+## Datasets: *backAM* and *Spocc*
 
-The `html_vignette` template includes a basic CSS theme. To override this theme you can specify your own CSS in the document metadata as follows:
+## *plotdata*: Visualizing the datasets to be used for the estimation of the niche of a species
 
-    output: 
-      rmarkdown::html_vignette:
-        css: mystyles.css
+  Three kinds of data are needed to apply this method:  
+1. __Background data__: measurements of the environmental variables that are assumed to be the most important for describing the fundamental niche of the species of interest. This set of environmental conditions correspond to all the geographical sites belonging to a grid that covers a geographic region of reference.  
+2. __Occurrence data__: georeferenced presences of the species and its corresponding measurements of environmental variables.  
+3. __Tolerance ranges__: intervals of tolerance for each variable that define the environemental variable, usually they come from physiological experiments.  
 
-## Figures
+## *priorpar*: Setting the values of the *a priori* parameters
+
+## *Energy*, *Supp*, *Initth*: Setting the statistical model and the supplementary functions needed to apply the MCMC algorithm
+
+  The details about the assumptions and the statistical model are not provided here, however, it is important to notice that under this Bayesian framework the purpose is to simulate values from the posterior distribution of the parameters that define fundamental niche of a species. The resulting expression for the posterior comes from: (1) assuming an ellipsoidal shape for the niche (which translates into using a multivariate normal distribution to define the likelihood), and (2), the addition of a priori information for the centroid and variances describing the niche. The general expression of the posterior function is  
+$$ f\left(\mu,A|D,E(t;G)\right) \propto \mathcal{L}\left(\mu,A\mid D\right)g_{1}\left(\mu\right)g_{2}\left(A\right),
+$$  
+where $\mathcal{L}\left(\mu,A\mid D\right)$ is the likelihood function of an i.i.d sample of size *n* from a multivariate normal distribution. $g_{i}\left(\cdot\right)$ are the _a priori_ density functions of the parameters of interest, $\mu$ and $A$.
+
+## *Runtw*: Simulating values from the posterior distribution
+
+  When working under a Bayesian framework, the posterior distribution is the objective function of the analysis since it comprises all the information about the parameters of interest.
+  I use an MCMC algorithm called "t-walk" (which will be described in detail in the final project) to generate simulations from the posterior. The set of draws provides posterior values of the mean, $\mu$, and the precision matrix, $A$, which can be used to construct ellipsoids and to derive metrics reflecting the uncertainty in the estimated parameters.
+  There is an R package that contains functions for running the t-walk algorithm, it is called "Rtwalk". I will use the function "Runtawlk" from this package to get simulations from the posterior. In order to do that, I need to define three main functions: Supp which checks that a new value in the Markov chain is valid, Initth which produces values from the _a priori_ distributions, and Energy which contains the posterior. I already defined and tested these functions as part of the assignement and, to illustrate, here is how I will use them:  
+
+## *plot_iter*, *uncer_plot*: Visualizing samples from the posterior function
+  After simulating from the posterior, I will need another set of functions to analyze and display the results. As an example, I defined the function "PlotIterations.R" which takes the output of the function "Runtwalk" and plots the resulting ellipses in the environmental space. 
+Figures
 
 The figure sizes have been customised so that you can easily put two images side-by-side. 
 
@@ -45,24 +66,5 @@ The figure sizes have been customised so that you can easily put two images side
 plot(1:10)
 plot(10:1)
 ```
-
-You can enable figure captions by `fig_caption: yes` in YAML:
-
-    output:
-      rmarkdown::html_vignette:
-        fig_caption: yes
-
 Then you can use the chunk option `fig.cap = "Your figure caption."` in **knitr**.
 
-## More Examples
-
-You can write math expressions, e.g. $Y = X\beta + \epsilon$, footnotes^[A footnote here.], and tables, e.g. using `knitr::kable()`.
-
-```{r, echo=FALSE, results='asis'}
-knitr::kable(head(mtcars, 10))
-```
-
-Also a quote using `>`:
-
-> "He who gives up [code] safety for [code] speed deserves neither."
-([via](https://twitter.com/hadleywickham/status/504368538874703872))
