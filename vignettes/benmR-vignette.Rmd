@@ -24,15 +24,21 @@ knitr::opts_chunk$set(
   The method included in this package estimates a niche by:  
 1. Defining an environmental space in which each axis represents a climatic variable. In this space we can plot the existing environmental conditions from the geographic region of interest and use them mainly for interpretating the results.  
 2. Using georeferenced occurrences of the species and its corresponding environmental conditions as the primary data, and climatic tolerance ranges from physiological experiments as _a priori_ information.  
-3. Postulating a simple shape for the niche of a species (Hutchinson's fundamental niche) and using the confidence curves form a multivariate normal distribution to represent the fundamental niche, so that the parameters of interest are a vector of means, $\mu$, and a precision matrix, $A$ (which is defined as the inverse of the covariance matrix).  
+3. Postulating a simple shape for the fundamental niche of a species and using the confidence curves from a multivariate normal distribution to represent the border of the fundamental niche. Then, the parameters of interest are a vector of means, $\mu$, and a precision matrix, $A$ (which is defined as the inverse of the covariance matrix).  
 4. Providing a probabilistic (i.e. Bayesian) statement of the problem and the posterior distribution for the parameters that define the fundamental niche.  
-5. Applying an MCMC algorithm (the one coded in the package *Rtwalk*) to simulate from the posterior and analyzing the variation in the sample.
+5. Applying an MCMC algorithm (the one coded in the package `Rtwalk`) to simulate from the posterior and analyzing the variation in the sample to assess the estimation.  
 
 ### *benmR*: package description
 
-The *benmR* package contains all the functions that the users need to apply this model to their data (*priorpar*,*Supp*, *Initth*,*Energy*,*Runtw*), as well as to produce visualizations of their data (*plotdata*) and the results of the niche estimation (*plot_iter*,*uncer_plot*). It also contains to datasets, *backAM* and *Spocc*, that can be used to run the examples provided here and in the documentation of each function.  
+The `benmR` package contains all the functions that the users need to apply this model to their data (`priorpar`,`Supp`, `Initth`,`Energy`,`Runtw`), as well as to produce visualizations of their data (`plotdata`) and the results of the niche estimation (`plot_iter`,`uncer_plot`). It also contains two datasets, `backAM` and `Spocc`, that can be used to run the examples provided here and in the documentation of each function.  
 
 ## Datasets: *backAM* and *Spocc*
+
+`backAM` is a numeric matrix with $20,000$ rows and $4$ columns that contains information about the existing environmental combinations within the geographical region of interest. `Spocc` is also a numeric matrix with the same number of columns but with only $50$ rows, each one representing a location where the species of interest was recorded as present. Both datasets are provided within the package `benmR` and are used in the examples of the function's documentation. We provide a visualization of both datasets in the next section.  
+
+The dataset called `backAM` contains information about $20,000$ locations within the Americas. The locations were uniformly and randomly selected across the continent, and its georeferences saved in the first two columns of this matrix, called $x$ and $y$, respectively. The columns named $Bio1WHStnd$ and $Bio12WHStnd$ contain standardized measurements of annual mean temperature and annual mean precipitation for each location, $x,y$.  
+
+The dataset `Spocc` contains information about $50$ locations in which the species occurred. For each location, the longitud and latitud values were saved in columns $x$ and $y$, and its environmental combinations (standardized measurements of annual mean temperature and annual mean precipitation) are saved in columns $Bio1WHStnd$ and $Bio12WHStnd$.
 
 ## *plotdata*: Visualizing the datasets to be used for the estimation of the niche of a species
 
@@ -41,7 +47,18 @@ The *benmR* package contains all the functions that the users need to apply this
 2. __Occurrence data__: georeferenced presences of the species and its corresponding measurements of environmental variables.  
 3. __Tolerance ranges__: intervals of tolerance for each variable that define the environemental variable, usually they come from physiological experiments.  
 
+<!--- Chunk for showing the use of the function plotdata. Dependencies: backAM, Spocc --->
+```{r plotdata}
+  data("backAM","Spocc")
+  tolran1 <- c(0,1.2,-1,0.8)
+  plotdata(backAM,Spocc,tolran1,"tomato",c("Annual Mean Temp","Annual Mean Precip"))
+
+```
+
+
 ## *priorpar*: Setting the values of the *a priori* parameters
+
+<!--- Chunk for showing the use of the function plotdata. Dependencies: backAM, Spocc --->
 
 ## *Energy*, *Supp*, *Initth*: Setting the statistical model and the supplementary functions needed to apply the MCMC algorithm
 
@@ -50,14 +67,20 @@ $$ f\left(\mu,A|D,E(t;G)\right) \propto \mathcal{L}\left(\mu,A\mid D\right)g_{1}
 $$  
 where $\mathcal{L}\left(\mu,A\mid D\right)$ is the likelihood function of an i.i.d sample of size *n* from a multivariate normal distribution. $g_{i}\left(\cdot\right)$ are the _a priori_ density functions of the parameters of interest, $\mu$ and $A$.
 
+<!--- Chunk for showing the use of the function plotdata. Dependencies: backAM, Spocc --->
+
 ## *Runtw*: Simulating values from the posterior distribution
 
   When working under a Bayesian framework, the posterior distribution is the objective function of the analysis since it comprises all the information about the parameters of interest.
   I use an MCMC algorithm called "t-walk" (which will be described in detail in the final project) to generate simulations from the posterior. The set of draws provides posterior values of the mean, $\mu$, and the precision matrix, $A$, which can be used to construct ellipsoids and to derive metrics reflecting the uncertainty in the estimated parameters.
   There is an R package that contains functions for running the t-walk algorithm, it is called "Rtwalk". I will use the function "Runtawlk" from this package to get simulations from the posterior. In order to do that, I need to define three main functions: Supp which checks that a new value in the Markov chain is valid, Initth which produces values from the _a priori_ distributions, and Energy which contains the posterior. I already defined and tested these functions as part of the assignement and, to illustrate, here is how I will use them:  
 
+<!--- Chunk for showing the use of the function plotdata. Dependencies: backAM, Spocc --->
+
 ## *plot_iter*, *uncer_plot*: Visualizing samples from the posterior function
   After simulating from the posterior, I will need another set of functions to analyze and display the results. As an example, I defined the function "PlotIterations.R" which takes the output of the function "Runtwalk" and plots the resulting ellipses in the environmental space. 
+<!--- Chunk for showing the use of the function plotdata. Dependencies: backAM, Spocc --->
+
 Figures
 
 The figure sizes have been customised so that you can easily put two images side-by-side. 
