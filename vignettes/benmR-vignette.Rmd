@@ -60,52 +60,50 @@ The dataset `Spocc` contains information about $50$ locations in which the speci
 ```
 
 <!--- Chunk for showing the output of the function plotdata qhen using the datasets form the package. Dependencies: plotdata_example.png --->
-```{r example, echo=F, out.width="60%", out.height="60%", fig.cap="Figure 1: Example of the output from the function plotdata"}
+```{r example, echo=F, out.width="70%", out.height="70%", fig.cap="Figure 1: Example of the output from the function plotdata"}
 knitr::include_graphics("plotdata_example.png")
 ```
 
 ## *priorpar*: Setting the values of the *a priori* parameters
 
-The *a priori* density functions of the parameters of interest, $\mu$ and $A$
-A list containing a vector of length equals to the number of
-#'   dimensions in the environmental space, and two squared matrices with that
-#'   same number of rows/columns. The first two elements represent the a priori
-#'   parameters of \code{mu} and the third element is the scale matrix that
-#'   defines the a priori distribution of \code{A}.
-<!--- Chunk for showing the use of the function priorpar. Dependencies: backAM, Spocc --->
+The *a priori* density functions of the parameters of interest, $\mu$ and $A$, are part of the posterior distribution. As it is shown in the next section, the model assumes that $\mu$ follows a multivariate normal distribution with parameters $\mu_{0}$ and $\Sigma_{0}$ and $A$ follows a Wishart distribution with parameters $W$ and $\alpha$. The parameters that define these distributions are define through the tolerance ranges for the species. A tolerance range vector must contain the minimum and maximum values of each environmental variable that the species is known to tolerate in lab experiments.  
+
+The function `priorpar` can be used to transform the values in a tolerance range vector into the values of the *a priori* distributions. Thus, the output of this function will contain a list with the following elements: a vector of length equals to the number of dimensions in the environmental space, and two squared matrices with that same number of rows/columns. The first two elements represent the a priori parameters of $\mu$ and the third element is the scale matrix, $W$ that defines the a priori distribution of $A$.  
+
+See more details in the documentation of the function.  
+<!--- Chunk for showing the use of the function priorpar. --->
 ```{r priorpar, eval=FALSE, echo=TRUE}
   tolran1 <- c(1,2,-1,1)
   priorpar(tolran1,10)
-
 ```
+
 ## *Energy*, *Supp*, *Initth*: Setting the statistical model and the supplementary functions needed to apply the MCMC algorithm
 
   The details about the assumptions and the statistical model are not provided here, however, it is important to notice that under this Bayesian framework the purpose is to simulate values from the posterior distribution of the parameters that define fundamental niche of a species. The resulting expression for the posterior comes from: (1) assuming an ellipsoidal shape for the niche (which translates into using a multivariate normal distribution to define the likelihood), and (2), the addition of a priori information for the centroid and variances describing the niche. The general expression of the posterior function is  
 $$ f\left(\mu,A|D,E(t;G)\right) \propto \mathcal{L}\left(\mu,A\mid D\right)g_{1}\left(\mu\right)g_{2}\left(A\right),
 $$  
-where $\mathcal{L}\left(\mu,A\mid D\right)$ is the likelihood function of an i.i.d sample of size *n* from a multivariate normal distribution. $g_{i}\left(\cdot\right)$ are the _a priori_ density functions of the parameters of interest, $\mu$ and $A$.
+where $\mathcal{L}\left(\mu,A\mid D\right)$ is the likelihood function of an i.i.d sample of size *n* from a multivariate normal distribution. $g_{i}\left(\cdot\right)$ are the _a priori_ density functions of the parameters of interest, $\mu$ and $A$. The function `Energy` contains the R code needed to calculate the posterior distribution.  
 
-<!--- Chunk for showing the use of the function plotdata. Dependencies: backAM, Spocc --->
+$g_1(\mu)$ is a multivariate normal distribution with mean $\mu_{0}$ and covariance matrix $\Sigma_{0}$:  
+$$ \nonumber g_1(\mu)= \left( 2\pi\right) ^{-d/2} \left|\Sigma_0\right| ^{-1/2} \exp{ [-\dfrac{1}{2} (\mu-\mu_0)^{T} \Sigma_0^{-1} ( \mu-\mu_0) ] } $$  
+$g_2(A)$ is a Wishart distribution with parameters $\alpha$ and $W$:
+$$ \nonumber g_2(A)=\dfrac{\left|A\right| ^{(\alpha-d-1)/2} exp[-\frac{1}{2}tr(A W^{-1})]}{2^{\alpha d /2} \pi^{d(d-1)/4} \prod_{i=1}^{d}\Gamma(\frac{\alpha+1-i}{2})} $$  
+
+In order to simulate values from the posterior function, we apply an MCMC algorithm that requeries two initial points for the Markov Chain and a function that checks if the values of the parameters of interest are within the parameter space (support of the posterior function). The function `initth` simulates values from the *a priori* distributions that can be used as initial values for the MCMC algorithm and the function `Supp` checks that the given vector of values belongs to the parameter space (it checks that the proposed mean vector be within certain ranges and that the proposed covariance matrix be possitive definite). These two functions should not be modified by the user unless the expression given for the posterior distribution changes.  
 
 ## *Runtw*: Simulating values from the posterior distribution
 
-  When working under a Bayesian framework, the posterior distribution is the objective function of the analysis since it comprises all the information about the parameters of interest.
-  I use an MCMC algorithm called "t-walk" (which will be described in detail in the final project) to generate simulations from the posterior. The set of draws provides posterior values of the mean, $\mu$, and the precision matrix, $A$, which can be used to construct ellipsoids and to derive metrics reflecting the uncertainty in the estimated parameters.
-  There is an R package that contains functions for running the t-walk algorithm, it is called "Rtwalk". I will use the function "Runtawlk" from this package to get simulations from the posterior. In order to do that, I need to define three main functions: Supp which checks that a new value in the Markov chain is valid, Initth which produces values from the _a priori_ distributions, and Energy which contains the posterior. I already defined and tested these functions as part of the assignement and, to illustrate, here is how I will use them:  
+  When working under a Bayesian framework, the posterior distribution is the objective function of the analysis since it comprises all the information about the parameters of interest.  
 
-<!--- Chunk for showing the use of the function plotdata. Dependencies: backAM, Spocc --->
+  We use an MCMC algorithm called "t-walk" to generate simulations from the posterior. The set of draws provides posterior values of the mean, $\mu$, and the precision matrix, $A$, which can be used to construct ellipsoids and to derive metrics reflecting the uncertainty in the estimated parameters.  
+
+  There is an R package that contains functions for running the t-walk algorithm, it is called `Rtwalk`. We use the function `Runtawlk` from this package to get simulations from the posterior. In order to do that, we need to use the functions: `Supp` which checks that a new value in the Markov chain is valid, `Initth` which produces values from the _a priori_ distributions, and `Energy` which contains the posterior. The function `Runtw` uses these functions together with the output of the function `priorpar` to simulate values from the posterior distribution that must be saved to analyse them with the functions `plot_iter` and  `uncer_plot`.  
 
 ## *plot_iter*, *uncer_plot*: Visualizing samples from the posterior function
-  After simulating from the posterior, I will need another set of functions to analyze and display the results. As an example, I defined the function "PlotIterations.R" which takes the output of the function "Runtwalk" and plots the resulting ellipses in the environmental space. 
-<!--- Chunk for showing the use of the function plotdata. Dependencies: backAM, Spocc --->
 
-Figures
+  After simulating from the posterior, you will need another set of functions to analyze and display the results. The function `plot_iter` which takes the output of the function `Runtw` and plots the resulting ellipses in the environmental space. The function `uncer_plot` combines all the simulated values to produce an uncertainty map.  
 
-The figure sizes have been customised so that you can easily put two images side-by-side. 
+<!--- Chunk for showing the use of the functions plot_iter and uncer_plot. --->
+```{r examples2}
 
-```{r, fig.show='hold'}
-plot(1:10)
-plot(10:1)
 ```
-Then you can use the chunk option `fig.cap = "Your figure caption."` in **knitr**.
-
