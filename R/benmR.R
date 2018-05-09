@@ -30,7 +30,10 @@
 #'
 #' @section Analysis functions:
 #' These are functions that help processing the results of the t-walk sampling.
-#' Under development...
+#' \code{plot_iter} takes the output of the function \code{Runtw} and plots the
+#' resulting ellipses in the environmental space.
+#' \code{uncer_plot} combines all the simulated values to produce an uncertainty
+#' map.
 #'
 #' @docType package
 #' @name benmR
