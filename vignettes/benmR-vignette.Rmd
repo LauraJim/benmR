@@ -17,6 +17,8 @@ knitr::opts_chunk$set(
   collapse = TRUE,
   comment = "#>"
 )
+# to base64 encode images
+#knitr::opts_knit$set(upload.fun = image_uri)
 ```
 
 ## Brief description of the Bayesian method for niche estimation
@@ -36,9 +38,9 @@ The `benmR` package contains all the functions that the users need to apply this
 
 `backAM` is a numeric matrix with $20,000$ rows and $4$ columns that contains information about the existing environmental combinations within the geographical region of interest. `Spocc` is also a numeric matrix with the same number of columns but with only $50$ rows, each one representing a location where the species of interest was recorded as present. Both datasets are provided within the package `benmR` and are used in the examples of the function's documentation. We provide a visualization of both datasets in the next section.  
 
-The dataset called `backAM` contains information about $20,000$ locations within the Americas. The locations were uniformly and randomly selected across the continent, and its georeferences saved in the first two columns of this matrix, called $x$ and $y$, respectively. The columns named $Bio1WHStnd$ and $Bio12WHStnd$ contain standardized measurements of annual mean temperature and annual mean precipitation for each location, $x,y$.  
+The dataset called `backAM` contains information about $20,000$ locations within the Americas. The locations were uniformly and randomly selected across the continent, and its georeferences saved in the first two columns of this matrix, called $x$ and $y$, respectively. The columns named *Bio1WHStnd* and *Bio12WHStnd* contain standardized measurements of annual mean temperature and annual mean precipitation for each location, $x,y$.  
 
-The dataset `Spocc` contains information about $50$ locations in which the species occurred. For each location, the longitud and latitud values were saved in columns $x$ and $y$, and its environmental combinations (standardized measurements of annual mean temperature and annual mean precipitation) are saved in columns $Bio1WHStnd$ and $Bio12WHStnd$.
+The dataset `Spocc` contains information about $50$ locations in which the species occurred. For each location, the longitud and latitud values were saved in columns $x$ and $y$, and its environmental combinations (standardized measurements of annual mean temperature and annual mean precipitation) are saved in columns *Bio1WHStnd* and *Bio12WHStnd*.
 
 ## *plotdata*: Visualizing the datasets to be used for the estimation of the niche of a species
 
@@ -47,19 +49,35 @@ The dataset `Spocc` contains information about $50$ locations in which the speci
 2. __Occurrence data__: georeferenced presences of the species and its corresponding measurements of environmental variables.  
 3. __Tolerance ranges__: intervals of tolerance for each variable that define the environemental variable, usually they come from physiological experiments.  
 
+  The function `plotdata` can be used to generate a couple of figures that display the three kinds of data in geographical and environmental spaces. As an example, here is the code needed to apply this function to the datasets provided in the package and a figure that shows the output:  
+
 <!--- Chunk for showing the use of the function plotdata. Dependencies: backAM, Spocc --->
-```{r plotdata}
+```{r plotdata, eval=FALSE, echo=TRUE}
   data("backAM","Spocc")
   tolran1 <- c(0,1.2,-1,0.8)
   plotdata(backAM,Spocc,tolran1,"tomato",c("Annual Mean Temp","Annual Mean Precip"))
 
 ```
 
+<!--- Chunk for showing the output of the function plotdata qhen using the datasets form the package. Dependencies: plotdata_example.png --->
+```{r example, echo=F, out.width="60%", out.height="60%", fig.cap="Figure 1: Example of the output from the function plotdata"}
+knitr::include_graphics("plotdata_example.png")
+```
 
 ## *priorpar*: Setting the values of the *a priori* parameters
 
-<!--- Chunk for showing the use of the function plotdata. Dependencies: backAM, Spocc --->
+The *a priori* density functions of the parameters of interest, $\mu$ and $A$
+A list containing a vector of length equals to the number of
+#'   dimensions in the environmental space, and two squared matrices with that
+#'   same number of rows/columns. The first two elements represent the a priori
+#'   parameters of \code{mu} and the third element is the scale matrix that
+#'   defines the a priori distribution of \code{A}.
+<!--- Chunk for showing the use of the function priorpar. Dependencies: backAM, Spocc --->
+```{r priorpar, eval=FALSE, echo=TRUE}
+  tolran1 <- c(1,2,-1,1)
+  priorpar(tolran1,10)
 
+```
 ## *Energy*, *Supp*, *Initth*: Setting the statistical model and the supplementary functions needed to apply the MCMC algorithm
 
   The details about the assumptions and the statistical model are not provided here, however, it is important to notice that under this Bayesian framework the purpose is to simulate values from the posterior distribution of the parameters that define fundamental niche of a species. The resulting expression for the posterior comes from: (1) assuming an ellipsoidal shape for the niche (which translates into using a multivariate normal distribution to define the likelihood), and (2), the addition of a priori information for the centroid and variances describing the niche. The general expression of the posterior function is  
