@@ -2,9 +2,9 @@
 % Please edit documentation in R/plot-tools.R
 \name{plotdata}
 \alias{plotdata}
-\title{Visualization of datasets to be used for niche estimatition.}
+\title{Visualization of datasets to be used for niche estimation.}
 \usage{
-plotdata(back, occ.sp, tolran, sp.col)
+plotdata(back, occ.sp, tolran, sp.col, envnames)
 }
 \arguments{
 \item{back}{numeric matrix that contains the background data for the species.}
@@ -15,6 +15,9 @@ plotdata(back, occ.sp, tolran, sp.col)
 ybottom, xright, ytop.}
 
 \item{sp.col}{character strign with a color name identifying the species.}
+
+\item{envnames}{character vector with the names of the environmental
+variables to work with.}
 }
 \value{
 A plot with two panels. The panel on the left will show the data in
@@ -30,16 +33,22 @@ This function produce a visualization of the background points, the
 occurrence data and the tolerance ranges of the species of interest, in both
 the geographical and the environmental spaces (displaying only the firs two
 or three dimensions of the latter).
+
 The first two columns of \code{back} must contain the longitude and latitude
 coordinates of all the points in the grid that define the region of interest,
 the remaining columns must contain the values (at least two) of the
 environmental variables at each location. Similarly, the first two columns of
 \code{occu.sp} must contain the geographical coordinates for the occurrence
 data, and the remaining columns must contain the environmental combinations.
+See the datasets \code{backAM} and \code{Spocc}, they are examples of the
+matrices \code{back} and \code{occu.sp}.
+
 \code{tolran} must provide the tolerance limits (lower and upper bounds) for
 each environmental variable odd columns contain lower limits even columns
 containd the upper limits.
 }
 \examples{
-plotdata(back1,occsp1,tolran1,"tomato")
+data("backAM","Spocc")
+tolran1 <- c(0,1.2,-1,0.8)
+plotdata(backAM,Spocc,tolran1,"tomato",c("Annual Mean Temp","Annual Mean Precip"))
 }

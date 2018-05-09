@@ -4,35 +4,54 @@
 \alias{Supp}
 \alias{Initth}
 \alias{Energy}
-\title{Subordinate functions to run the t-walk algorithm for the posterior function}
+\alias{Runtw}
+\title{Functions used to run the t-walk algorithm for the posterior function}
 \usage{
 Supp(th)
 
 Initth()
 
 Energy(th)
+
+Runtw(Tr = 5000, env.back, env.occ, priors, mu.lim, pflag = F, ...)
 }
 \arguments{
 \item{th}{numeric vector of length equals to lenght(mu) +
 (ncol(A)*(ncol(A)+1)/2).}
+
+\item{Tr}{number of iterations to be calculated in the t-walk.}
+
+\item{env.back}{numeric matrix containing the environmental combinations to
+be considered as the bakcground points (existing environmental space).}
+
+\item{env.occ}{numeric matrix containing the environmental combinations to
+be considered as the occurrences of the species.}
+
+\item{priors}{list of parameters to be used for the a priori distributions.}
+
+\item{pflag}{logic, indicating if the simulated sample from the posterior
+should be plotted.}
 }
 \value{
 \code{Supp} equals TRUE, if valid values of mu and A are contained in the
 vector th, and FALSE, if one or both parameters are out of the support of the
 objective function.
-\code{Initth} returns a numeric vector such that its length is equal to\eqn{lenght(mu)
-+(ncol(A)*(ncol(A)+1)/2)} and contains initial values for mu and A.
+\code{Initth} returns a numeric vector such that its length is equal
+to\eqn{lenght(mu) +(ncol(A)*(ncol(A)+1)/2)} and contains initial values for
+mu and A.
 \code{Energy} returns -log of the posterior function at \code{th}.
+\code{Runtw} returns the matrix that contains all the samples from the
+posterior.
 }
 \description{
 These three functions are used when the t-walk algorithm is used to simulate
 values from the posterior function and estimate the centroid (mu) and the
- precision matrix (A) that define a fundamental niche. If the underlying
+precision matrix (A) that define a fundamental niche. If the underlying
 statistical model changes, these functions must be modified.
 }
 \details{
 In case of having a bivariate normal distribution in the likelihood function,
-\code{length(mu)=2} and \code{ncol(A)=3}, and then \code{length(th) = 2 +
+\code{length(mu)=2} and \code{ncol(A)=2}, and then \code{length(th) = 2 +
 (2*3)/2 = 5} (degrees of freedom).
 }
 \section{Functions}{
@@ -44,6 +63,8 @@ posterior function.
 function.
 
 \item \code{Energy}: Evaluates the posterior distribution.
+
+\item \code{Runtw}: Runs the MCMC algorithm to simulate from the posterior
 }}
 
 \examples{
